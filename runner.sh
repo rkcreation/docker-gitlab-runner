@@ -5,25 +5,32 @@ pid=0
 token=()
 gitlab_service_url=https://${GITLAB_HOST}
 
+TOKEN=${GITLAB_RUNNER_TOKEN:-}
+
+if [[ -e $TOKEN ]]; then
+  TOKEN=$(cat /run/secrets/gitlab_register_token)
+fi
+
 # SIGTERM-handler
-term_handler() {
+unregister_runner() {
   if [ $pid -ne 0 ]; then
     kill -SIGTERM "$pid"
     wait "$pid"
   fi
-  gitlab-runner unregister -u ${gitlab_service_url} -t ${GITLAB_RUNNER_TOKEN}
+  gitlab-runner unregister -u ${gitlab_service_url} -t ${TOKEN}
   exit 143; # 128 + 15 -- SIGTERM
 }
 
 # setup handlers
 # on callback, kill the last background process, which is `tail -f /dev/null` and execute the specified handler
-trap 'kill ${!}; term_handler' SIGTERM
+# trap 'kill ${!}; unregister_runner' SIGTERM
+trap unregister_runner HUP INT QUIT ABRT KILL ALRM TERM TSTP
 
 # register runner
 yes '' | gitlab-runner register --url ${gitlab_service_url} \
-                                --registration-token ${GITLAB_RUNNER_TOKEN} \
+                                --registration-token ${TOKEN} \
                                 --executor docker \
-                                --name "runner" \
+                                --name "runner-$(hostname -f)" \
                                 --output-limit "20480" \
                                 --docker-image "docker:latest" \
                                 --docker-volumes /root/m2:/root/.m2 \
