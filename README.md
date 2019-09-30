@@ -14,3 +14,5 @@ variables:
 services:
   - docker:dind
 ```
+
+Needs secrets `gitlab_runner_token`

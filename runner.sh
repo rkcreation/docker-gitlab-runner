@@ -5,10 +5,10 @@ pid=0
 token=()
 gitlab_service_url=https://${GITLAB_HOST}
 
-TOKEN=${GITLAB_RUNNER_TOKEN:-}
+TOKEN=${GITLAB_RUNNER_TOKEN}
 
 if [[ -e $TOKEN ]]; then
-  TOKEN=$(cat /run/secrets/gitlab_register_token)
+  TOKEN=$(cat /run/secrets/gitlab_runner_token)
 fi
 
 # SIGTERM-handler
@@ -17,7 +17,7 @@ unregister_runner() {
     kill -SIGTERM "$pid"
     wait "$pid"
   fi
-  gitlab-runner unregister -u ${gitlab_service_url} -t ${TOKEN}
+  gitlab-runner unregister -u ${gitlab_service_url} -t "$(cat /etc/gitlab-runner/config.toml | grep token | awk '{print $3}' | tr -d '"')"
   exit 143; # 128 + 15 -- SIGTERM
 }
 
@@ -38,7 +38,7 @@ yes '' | gitlab-runner register --url ${gitlab_service_url} \
                                 --docker-extra-hosts ${GITLAB_HOST}:${GITLAB_IP}
 
 # assign runner token
-token=$(cat /etc/gitlab-runner/config.toml | grep token | awk '{print $3}' | tr -d '"')
+# token=$(cat /etc/gitlab-runner/config.toml | grep token | awk '{print $3}' | tr -d '"')
 
 # run multi-runner
 gitlab-ci-multi-runner run --user=gitlab-runner --working-directory=/home/gitlab-runner & pid="$!"
