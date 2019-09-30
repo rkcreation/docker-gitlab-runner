@@ -11,7 +11,7 @@ term_handler() {
     kill -SIGTERM "$pid"
     wait "$pid"
   fi
-  gitlab-runner unregister -u ${gitlab_service_url} -t ${token}
+  gitlab-runner unregister -u ${gitlab_service_url} -t ${GITLAB_RUNNER_TOKEN}
   exit 143; # 128 + 15 -- SIGTERM
 }
 
