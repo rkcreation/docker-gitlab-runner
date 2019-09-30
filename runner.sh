@@ -2,13 +2,16 @@
 set -x
 
 pid=0
-token=()
+# token=()
 gitlab_service_url=https://${GITLAB_HOST}
 
 TOKEN=${GITLAB_RUNNER_TOKEN}
-
-if [[ -e $TOKEN ]]; then
+if [[ -z $TOKEN ]]; then
+  echo "Env var GITLAB_RUNNER_TOKEN is empty, trying to use secret gitlab_runner_token..."
   TOKEN=$(cat /run/secrets/gitlab_runner_token)
+  echo "Using gitlab_runner_token secret (${TOKEN})..."
+else
+  echo "Using GITLAB_RUNNER_TOKEN env var (${TOKEN})..."
 fi
 
 # SIGTERM-handler
