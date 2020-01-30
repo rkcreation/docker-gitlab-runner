@@ -20,7 +20,7 @@ unregister_runner() {
     kill -SIGTERM "$pid"
     wait "$pid"
   fi
-  gitlab-runner unregister -u ${gitlab_service_url} -t "$(cat /etc/gitlab-runner/config.toml | grep token | awk '{print $3}' | tr -d '"')"
+  gitlab-runner unregister --url ${gitlab_service_url} --name "runner-$(hostname -f)"
   exit 143; # 128 + 15 -- SIGTERM
 }
 
