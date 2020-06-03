@@ -36,7 +36,7 @@ yes '' | gitlab-runner register --url ${gitlab_service_url} \
                                 --name "runner-$(hostname -f)" \
                                 --output-limit "20480" \
                                 --docker-image "docker:latest" \
-                                --docker-volumes /root/m2:/root/.m2 \
+                                --docker-volumes /root/m2:/root/.m2 /srv/cache:/cache:rw \
                                 --docker-privileged \
                                 --docker-extra-hosts ${GITLAB_HOST}:${GITLAB_IP}
 
